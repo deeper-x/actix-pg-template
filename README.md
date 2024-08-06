@@ -58,10 +58,10 @@
 
    Send a ping:
    ```shell
-   echo '{"value": "pong"}' | http -f --json --print h POST http://127.0.0.1:8080/new_ping
+   echo '{"value": "pong"}' | http -f --json --print h POST http://127.0.0.1:8080/ping/post
    ```
 
    Retrieve pings:
    ```shell
-   http http://127.0.0.1:8080/get_pings
+   http http://127.0.0.1:8080/ping/get
    ```
