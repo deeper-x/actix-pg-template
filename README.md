@@ -1,4 +1,5 @@
-# async_pg template repository
+# Rust async_pg template repository
+[![Rust](https://github.com/deeper-x/actix-pg-template/actions/workflows/rust.yml/badge.svg)](https://github.com/deeper-x/actix-pg-template/actions/workflows/rust.yml)
 
 ## Project template base on
 
