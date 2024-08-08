@@ -1,5 +1,5 @@
 [package]
-name = "change-me"
+name = "rust-recap"
 version = "1.0.0"
 edition = "2021"
 
