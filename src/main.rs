@@ -1,4 +1,8 @@
-use actix_web::{middleware::Logger, web, App, HttpServer};
+use actix_web::{
+    middleware::Logger,
+    web::{self, route},
+    App, HttpServer,
+};
 use confik::{Configuration as _, EnvSource};
 use dotenvy::dotenv;
 use tokio_postgres::NoTls;
@@ -46,6 +50,11 @@ async fn main() -> std::io::Result<()> {
                 web::scope("/ping")
                     .route("/get", web::get().to(server::router::get_ping_records))
                     .route("/post", web::post().to(server::router::add_ping_record)),
+            )
+            .service(
+                web::scope("/migration")
+                    .route("/all", web::get().to(server::router::get_migration_records))
+                    .route("/add", web::post().to(server::router::add_migration_record)),
             )
     })
     .bind(config.server_addr.clone())?

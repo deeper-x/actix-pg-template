@@ -1,7 +1,10 @@
+use std::result;
+
 use deadpool_postgres::Client;
 use tokio_pg_mapper::FromTokioPostgresRow;
+use tokio_postgres::Row;
 
-use crate::{db::models::Ping, settings::errors::MyError};
+use crate::{db::models::Migration, db::models::Ping, settings::errors::MyError};
 
 // retrieve ping records list
 pub async fn get_ping_records(client: &Client) -> Result<Vec<Ping>, MyError> {
@@ -17,6 +20,34 @@ pub async fn get_ping_records(client: &Client) -> Result<Vec<Ping>, MyError> {
         .collect::<Vec<Ping>>();
 
     Ok(results)
+}
+
+pub async fn get_migration_records(client: &Client) -> Result<Vec<Migration>, MyError> {
+    let stmt = client
+        .prepare("SELECT id, query, ts_created FROM migrations;")
+        .await
+        .unwrap();
+
+    let results = client
+        .query(&stmt, &[])
+        .await?
+        .iter()
+        .map(|row| Migration::from_row_ref(row).unwrap())
+        .collect::<Vec<Migration>>();
+
+    Ok(results)
+}
+
+pub async fn add_migration_record(
+    client: &Client,
+    migration: Migration,
+) -> Result<tokio_postgres::Row, tokio_postgres::Error> {
+    let stmt = client
+        .prepare("INSERT INTO migrations (query) VALUES ($1) RETURNING id;")
+        .await
+        .unwrap();
+
+    client.query_one(&stmt, &[&migration.query]).await
 }
 
 // add ping record
