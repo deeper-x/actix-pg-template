@@ -58,7 +58,8 @@ async fn main() -> std::io::Result<()> {
                     .route(
                         "/details/{id_migration}",
                         web::get().to(server::router::get_migration_details),
-                    ),
+                    )
+                    .route("/update", web::post().to(server::router::update_migration)),
             )
     })
     .bind(config.server_addr.clone())?

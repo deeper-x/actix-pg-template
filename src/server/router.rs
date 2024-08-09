@@ -55,6 +55,32 @@ pub async fn get_migration_details(
     }
 }
 
+pub async fn update_migration(
+    migration: web::Json<models::Migration>,
+    db_pool: web::Data<Pool>,
+) -> Result<HttpResponse, Error> {
+    let migration_info = migration.into_inner();
+
+    let client = db_pool
+        .get()
+        .await
+        .map_err(settings::errors::MyError::PoolError)?;
+
+    let updated_migration = dml::update_migration_record(&client, migration_info).await;
+
+    match updated_migration {
+        Ok(it) => {
+            let id: i64 = it.get(0);
+            Ok(HttpResponse::Ok().json(id))
+        }
+
+        Err(err) => {
+            println!("Error on updating migration: {}", err);
+            Ok(HttpResponse::InternalServerError().json("err"))
+        }
+    }
+}
+
 pub async fn add_migration_record(
     migration: web::Json<models::Migration>,
     db_pool: web::Data<Pool>,

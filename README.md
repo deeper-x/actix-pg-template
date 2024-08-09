@@ -24,3 +24,19 @@ Using a different terminal send an HTTP POST request to the running server:
    ```shell
    http http://127.0.0.1:8080/ping/get
    ```
+
+Migrations list:
+```sh
+http http://127.0.0.1:8080/migration/all
+```
+
+Migration info:
+```sh
+http http://127.0.0.1:8080/migration/details/14
+```
+
+Update migration:
+
+```sh
+echo '{"id": 14, "query": "demo query edited from cli"}' | http -f --json --print hb http://127.0.0.1:8080/migration/update 
+```

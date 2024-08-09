@@ -68,6 +68,20 @@ pub async fn add_migration_record(
     client.query_one(&stmt, &[&migration.query]).await
 }
 
+pub async fn update_migration_record(
+    client: &Client,
+    migration: Migration,
+) -> Result<tokio_postgres::Row, tokio_postgres::Error> {
+    let stmt = client
+        .prepare("UPDATE migrations set query = $1 where id = $2 RETURNING id;")
+        .await
+        .unwrap();
+
+    client
+        .query_one(&stmt, &[&migration.query, &migration.id])
+        .await
+}
+
 // add ping record
 pub async fn add_ping_record(client: &Client, ping_info: Ping) -> Result<Ping, MyError> {
     let _stmt = include_str!("./sql/ping/add_record.sql");
