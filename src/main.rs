@@ -54,7 +54,11 @@ async fn main() -> std::io::Result<()> {
             .service(
                 web::scope("/migration")
                     .route("/all", web::get().to(server::router::get_migration_records))
-                    .route("/add", web::post().to(server::router::add_migration_record)),
+                    .route("/add", web::post().to(server::router::add_migration_record))
+                    .route(
+                        "/details/{id_migration}",
+                        web::get().to(server::router::get_migration_details),
+                    ),
             )
     })
     .bind(config.server_addr.clone())?

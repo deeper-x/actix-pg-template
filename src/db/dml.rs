@@ -1,8 +1,6 @@
-use std::result;
-
 use deadpool_postgres::Client;
+use std::time::SystemTime;
 use tokio_pg_mapper::FromTokioPostgresRow;
-use tokio_postgres::Row;
 
 use crate::{db::models::Migration, db::models::Ping, settings::errors::MyError};
 
@@ -36,6 +34,26 @@ pub async fn get_migration_records(client: &Client) -> Result<Vec<Migration>, My
         .collect::<Vec<Migration>>();
 
     Ok(results)
+}
+
+pub async fn get_migration_record(
+    client: &Client,
+    id_migration: i64,
+) -> Result<Migration, MyError> {
+    let stmt = client
+        .prepare("SELECT id, query, ts_created FROM migrations WHERE id = $1;")
+        .await
+        .unwrap();
+
+    let row: tokio_postgres::Row = client.query_one(&stmt, &[&id_migration]).await?;
+
+    let id: i64 = row.get("id");
+    let query: String = row.get("query");
+    let ts_created: SystemTime = row.get("ts_created");
+
+    let m: Migration = Migration::new(id, query, ts_created);
+
+    Ok(m)
 }
 
 pub async fn add_migration_record(

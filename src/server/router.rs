@@ -1,8 +1,12 @@
+use std::time::SystemTime;
+
 use actix_web::{web, Error, HttpResponse};
 use deadpool_postgres::{Client, Pool};
 
+use crate::db::models::Migration;
 use crate::db::{dml, models};
 use crate::settings;
+use crate::settings::errors::MyError;
 
 // retrives ping records
 pub async fn get_ping_records(db_pool: web::Data<Pool>) -> Result<HttpResponse, Error> {
@@ -25,6 +29,30 @@ pub async fn get_migration_records(db_pool: web::Data<Pool>) -> Result<HttpRespo
     let migrations = dml::get_migration_records(&client).await?;
 
     Ok(HttpResponse::Ok().json(migrations))
+}
+
+pub async fn get_migration_details(
+    db_pool: web::Data<Pool>,
+    path: web::Path<(i64,)>,
+) -> Result<HttpResponse, Error> {
+    let client = db_pool
+        .get()
+        .await
+        .map_err(settings::errors::MyError::PoolError)?;
+
+    let id_migration: (i64,) = path.into_inner();
+
+    let migration_data: Result<Migration, MyError> =
+        dml::get_migration_record(&client, id_migration.0).await;
+
+    match migration_data {
+        Ok(it) => Ok(HttpResponse::Ok().json(it)),
+
+        Err(err) => {
+            println!("{}", err);
+            Ok(HttpResponse::InternalServerError().json("102"))
+        }
+    }
 }
 
 pub async fn add_migration_record(
