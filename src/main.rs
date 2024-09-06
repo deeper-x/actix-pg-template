@@ -1,6 +1,6 @@
 use actix_web::{
     middleware::Logger,
-    web::{self, route},
+    web::{self},
     App, HttpServer,
 };
 use confik::{Configuration as _, EnvSource};
@@ -26,7 +26,7 @@ mod server {
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     // 1. enable logging info level
-    env_logger::init_from_env(env_logger::Env::new().default_filter_or("info"));
+    env_logger::init_from_env(env_logger::Env::new().default_filter_or("debug"));
 
     // 2. load dotenv
     dotenv().ok();
@@ -50,16 +50,6 @@ async fn main() -> std::io::Result<()> {
                 web::scope("/ping")
                     .route("/get", web::get().to(server::router::get_ping_records))
                     .route("/post", web::post().to(server::router::add_ping_record)),
-            )
-            .service(
-                web::scope("/migration")
-                    .route("/all", web::get().to(server::router::get_migration_records))
-                    .route("/add", web::post().to(server::router::add_migration_record))
-                    .route(
-                        "/details/{id_migration}",
-                        web::get().to(server::router::get_migration_details),
-                    )
-                    .route("/update", web::post().to(server::router::update_migration)),
             )
     })
     .bind(config.server_addr.clone())?
