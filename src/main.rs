@@ -4,10 +4,13 @@ use actix_web::{
     App, HttpServer,
 };
 use confik::{Configuration as _, EnvSource};
+
 use dotenvy::dotenv;
 use tokio_postgres::NoTls;
 
 use crate::settings::config::ServerConfig;
+use deadpool_postgres::Pool;
+
 use env_logger;
 
 mod settings {
@@ -32,16 +35,16 @@ async fn main() -> std::io::Result<()> {
     dotenv().ok();
 
     // 3. build server configuration via config::Configuration implementations
-    let config = ServerConfig::builder()
+    let config: ServerConfig = ServerConfig::builder()
         .override_with(EnvSource::new())
         .try_build()
         .unwrap();
 
     // 4. database setup, configuring pool
-    let pool = config.pg.create_pool(None, NoTls).unwrap();
+    let pool: Pool = config.pg.create_pool(None, NoTls).unwrap();
 
     // 5. http server instance setup, linking each scope to its routes
-    let server = HttpServer::new(move || {
+    let server: actix_web::dev::Server = HttpServer::new(move || {
         App::new()
             .wrap(Logger::default())
             .app_data(web::Data::new(pool.clone()))

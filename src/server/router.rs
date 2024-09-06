@@ -1,5 +1,6 @@
 use actix_web::{web, Error, HttpResponse};
 use deadpool_postgres::{Client, Pool};
+use models::Ping;
 
 use crate::db::{dml, models};
 use crate::settings;
@@ -11,7 +12,7 @@ pub async fn get_ping_records(db_pool: web::Data<Pool>) -> Result<HttpResponse, 
         .await
         .map_err(settings::errors::MyError::PoolError)?;
 
-    let pings = dml::get_ping_records(&client).await?;
+    let pings: Vec<Ping> = dml::get_ping_records(&client).await?;
 
     Ok(HttpResponse::Ok().json(pings))
 }
