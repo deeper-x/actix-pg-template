@@ -1,1 +1,1 @@
-SELECT $table_fields FROM ping;
+SELECT id, value, ts_created FROM ping;
